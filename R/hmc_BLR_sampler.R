@@ -124,7 +124,7 @@ hmc_base_sampler_BLR <- function(nsamples,
                                  output = F) {
   if (!is.list(data_split) | length(data_split)!=C) {
     stop("hmc_base_sampler_BLR: data_split must be a list of length m")
-  } else if (!all(sapply(data_split, function(sub_posterior) (is.list(sub_posterior) & identical(names(data), c("y", "X")))))) {
+  } else if (!all(sapply(data_split, function(sub_posterior) (is.list(sub_posterior) & identical(names(sub_posterior), c("y", "X")))))) {
     stop("hmc_base_sampler_BLR: each item in data_split must be a list of length 2 with names y and X")
   } else if (!all(sapply(1:C, function(i) is.vector(data_split[[i]]$y)))) {
     stop("hmc_base_sampler_BLR: for each i in 1:C, data_split[[i]]$y must be a vector")

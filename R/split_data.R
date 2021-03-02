@@ -32,6 +32,7 @@ split_data <- function(dataframe, y_col_index, X_col_index, C, as_dataframe = T)
     for (i in 1:C) {
       data[[i]]$y <- split_dataframe[[i]][,y_col_index]
       data[[i]]$X <- as.matrix(cbind(rep(1, nrow(as.matrix(x = split_dataframe[[i]][,X_col_index]))), split_dataframe[[i]][,X_col_index]))
+      colnames(data[[i]]$X)[1] <- 'intercept'
     }
     return(data)
   }
