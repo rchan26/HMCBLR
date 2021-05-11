@@ -1,10 +1,30 @@
+#' Function to obtain unique rows in the data
+#'
+#' @param y vector of responses
+#' @param X design matrix
+#'
+#' @return list containing the unique rows of the full data and the unique rows
+#'         of the design matrix with their corresponding counts
+#'
+#' @export
+unique_row_count <- function(y, X) {
+  full_data <- as.data.frame(cbind('y' = y, X))
+  full_data_count <- as.data.frame(full_data %>% group_by_all %>% count)
+  colnames(full_data_count) <- c(colnames(full_data_count)[1:(length(colnames(full_data_count))-1)], "count")
+  design_count <- as.data.frame(as.data.frame(X) %>% group_by_all %>% count)
+  colnames(design_count) <- c(colnames(design_count)[1:(length(colnames(design_count))-1)], "count")
+  return(list('full_data_count' = full_data_count,
+              'design_count' = design_count))
+}
+
 #' Function to split a dataframe into C sub-dataframes
 #'
 #' @param dataframe data
 #' @param y_col_index index for responses y in data frame
 #' @param x_col_index index / indicies for input variables X in data frame
 #' @param C number of subsets
-#' @param as_dataframe determines whether or not to return the split data as dataframes or as responses and inputs
+#' @param as_dataframe determines whether or not to return the split data as dataframes
+#'                     or as responses and inputs
 #'
 #' @return split data
 #'
@@ -28,11 +48,14 @@ split_data <- function(dataframe, y_col_index, X_col_index, C, as_dataframe = T)
   if (as_dataframe) {
     return(split_dataframe)
   } else {
-    data <- lapply(1:C, function(c) list('y' = NA, 'X' = NA))
+    data <- lapply(1:C, function(c) list('y' = NA, 'X' = NA, 'full_data_count' = NA, 'design_count' = NA))
     for (i in 1:C) {
       data[[i]]$y <- split_dataframe[[i]][,y_col_index]
       data[[i]]$X <- as.matrix(cbind(rep(1, nrow(as.matrix(x = split_dataframe[[i]][,X_col_index]))), split_dataframe[[i]][,X_col_index]))
       colnames(data[[i]]$X)[1] <- 'intercept'
+      counts <- unique_row_count(y = data[[i]]$y, X = data[[i]]$X)
+      data[[i]]$full_data_count <- counts$full_data_count
+      data[[i]]$design_count <- counts$design_count
     }
     return(data)
   }

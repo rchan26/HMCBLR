@@ -33,9 +33,9 @@ hmc_base_sampler_BLR(
 
 \item{output}{boolean value: defaults to T, determines whether or not to print output to console}
 
-\item{data}{list of length C where each item is a list of length 2 where
-for c=1,...,C, data[\link{c}]$y is the vector for y responses and
-data[\link{c}]$x is the design matrix for the covariates for sub-posterior c}
+\item{data}{list of length C where each item is a list where for c=1,...,C,
+data[\link{c}]$y is the vector for y responses and data[\link{c}]$x is
+the design matrix for the covariates for sub-posterior c}
 }
 \value{
 samples from the sub-posterior targets for the split data sets for the logistic regression model

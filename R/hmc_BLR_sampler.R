@@ -2,7 +2,7 @@
 #'
 #' Sample from (sub-)posterior using Stan
 #'
-#' @param data list of length 2 where data$y is the vector for y responses
+#' @param data list where data$y is the vector for y responses
 #'             and data$x is the design matrix for the covariates
 #' @param C number of sub-posterior (default to 1)
 #' @param prior_means prior for means of predictors
@@ -27,11 +27,7 @@ hmc_sample_BLR <- function(data,
                            chains,
                            seed = sample.int(.Machine$integer.max, 1),
                            output = F) {
-  if (!is.list(data) | length(data)!=2) {
-    stop("hmc_sample_BLR: data must be a length of length 2")
-  } else if (!identical(names(data), c("y", "X"))) {
-    stop("hmc_sample_BLR: data must be a length of length 2 with elements named \'y\' and \'X\'")
-  } else if (!is.vector(data$y)) {
+  if (!is.vector(data$y)) {
     stop("hmc_sample_BLR: data$y must be a vector")
   } else if (!is.matrix(data$X) & !is.data.frame(data$X)) {
     stop("hmc_sample_BLR: data$X must be a matrix or data frame")
@@ -100,9 +96,9 @@ hmc_sample_BLR <- function(data,
 #'
 #' @param nsamples number of samples per node
 #' @param warmup number of burn in iterations
-#' @param data list of length C where each item is a list of length 2 where
-#'             for c=1,...,C, data[[c]]$y is the vector for y responses and
-#'             data[[c]]$x is the design matrix for the covariates for sub-posterior c
+#' @param data list of length C where each item is a list where for c=1,...,C,
+#'             data[[c]]$y is the vector for y responses and data[[c]]$x is
+#'             the design matrix for the covariates for sub-posterior c
 #' @param C number of sub-posteriors (default to 1)
 #' @param prior_means prior for means of predictors
 #' @param prior_variances prior for variances of predictors
@@ -124,8 +120,6 @@ hmc_base_sampler_BLR <- function(nsamples,
                                  output = F) {
   if (!is.list(data_split) | length(data_split)!=C) {
     stop("hmc_base_sampler_BLR: data_split must be a list of length m")
-  } else if (!all(sapply(data_split, function(sub_posterior) (is.list(sub_posterior) & identical(names(sub_posterior), c("y", "X")))))) {
-    stop("hmc_base_sampler_BLR: each item in data_split must be a list of length 2 with names y and X")
   } else if (!all(sapply(1:C, function(i) is.vector(data_split[[i]]$y)))) {
     stop("hmc_base_sampler_BLR: for each i in 1:C, data_split[[i]]$y must be a vector")
   } else if (!all(sapply(1:C, function(i) is.matrix(data_split[[i]]$X)))) {

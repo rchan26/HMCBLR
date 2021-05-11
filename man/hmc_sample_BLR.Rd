@@ -18,7 +18,7 @@ hmc_sample_BLR(
 )
 }
 \arguments{
-\item{data}{list of length 2 where data$y is the vector for y responses
+\item{data}{list where data$y is the vector for y responses
 and data$x is the design matrix for the covariates}
 
 \item{C}{number of sub-posterior (default to 1)}

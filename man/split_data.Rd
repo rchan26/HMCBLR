@@ -13,7 +13,8 @@ split_data(dataframe, y_col_index, X_col_index, C, as_dataframe = T)
 
 \item{C}{number of subsets}
 
-\item{as_dataframe}{determines whether or not to return the split data as dataframes or as responses and inputs}
+\item{as_dataframe}{determines whether or not to return the split data as dataframes
+or as responses and inputs}
 
 \item{x_col_index}{index / indicies for input variables X in data frame}
 }
