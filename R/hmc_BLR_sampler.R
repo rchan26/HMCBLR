@@ -2,42 +2,40 @@
 #'
 #' Sample from (sub-)posterior using Stan
 #'
-#' @param data list where data$y is the vector for y responses
-#'             and data$x is the design matrix for the covariates
+#' @param full_data_count a matrix or dataframe of the unique data with their
+#'                        corresponding counts
 #' @param C number of sub-posterior (default to 1)
 #' @param prior_means prior for means of predictors
 #' @param prior_variances prior for variances of predictors
-#' @param power exponent for the posterior (defaults to 1)
 #' @param iterations number of iterations per chain
 #' @param warmup number of burn in iterations
 #' @param chains number of chains
 #' @param seed seed number for random number generation
-#' @param output boolean value: defaults to T, determines whether or not to print output to console
+#' @param output boolean value: defaults to T, determines whether or not to
+#'               print output to console
 #'
 #' @return samples from the (sub-)posterior target for the logistic regression model
 #'
 #' @export
-hmc_sample_BLR <- function(data,
+hmc_sample_BLR <- function(full_data_count,
                            C,
                            prior_means,
                            prior_variances,
-                           power = 1,
                            iterations,
                            warmup,
                            chains,
                            seed = sample.int(.Machine$integer.max, 1),
                            output = F) {
-  if (!is.vector(data$y)) {
-    stop("hmc_sample_BLR: data$y must be a vector")
-  } else if (!is.matrix(data$X) & !is.data.frame(data$X)) {
-    stop("hmc_sample_BLR: data$X must be a matrix or data frame")
+  if (!is.matrix(full_data_count) & !is.data.frame(full_data_count)) {
+    stop("hmc_sample_BLR: full_data_count must be a matrix or data frame")
   } else if (!is.vector(prior_means)) {
     stop("hmc_sample_BLR: prior_means must be a vector")
   } else if (!is.vector(prior_variances)) {
     stop("hmc_sample_BLR: prior_variances must be a vector")
   }
-  y <- data$y
-  X <- data$X
+  y <- full_data_count$y
+  X <- as.matrix(subset(full_data_count, select = -c(y, count)))
+  count <- full_data_count$count
   # check that y and X have the same number of instances
   if (length(y) != nrow(X)) {
     stop("hmc_sample_BLR: y and X do not have the same number of samples")
@@ -63,10 +61,10 @@ hmc_sample_BLR <- function(data,
                         p = (ncol(X)-1),
                         y = y,
                         X = X,
+                        count = count,
                         prior_means = prior_means,
                         prior_variances = prior_variances,
-                        C = C,
-                        power = power)
+                        C = C)
   if (output) {
     model <- rstan::sampling(object = stanmodels$bayes_logistic,
                              data = training_data,
@@ -97,16 +95,17 @@ hmc_sample_BLR <- function(data,
 #' @param nsamples number of samples per node
 #' @param warmup number of burn in iterations
 #' @param data list of length C where each item is a list where for c=1,...,C,
-#'             data[[c]]$y is the vector for y responses and data[[c]]$x is
-#'             the design matrix for the covariates for sub-posterior c
+#'             data_split[[c]]$full_data_count is a matrix or data frame of
+#'             the unique data with their corresponding counts
 #' @param C number of sub-posteriors (default to 1)
 #' @param prior_means prior for means of predictors
 #' @param prior_variances prior for variances of predictors
-#' @param power exponent for the posterior (defaults to 1)
 #' @param seed seed number for random number generation
-#' @param output boolean value: defaults to T, determines whether or not to print output to console
+#' @param output boolean value: defaults to T, determines whether or not
+#'               to print output to console
 #'
-#' @return samples from the sub-posterior targets for the split data sets for the logistic regression model
+#' @return samples from the sub-posterior targets for the split data sets
+#'         for the logistic regression model
 #'
 #' @export
 hmc_base_sampler_BLR <- function(nsamples,
@@ -115,15 +114,12 @@ hmc_base_sampler_BLR <- function(nsamples,
                                  C,
                                  prior_means,
                                  prior_variances,
-                                 power = 1,
                                  seed = sample.int(.Machine$integer.max, 1),
                                  output = F) {
   if (!is.list(data_split) | length(data_split)!=C) {
-    stop("hmc_base_sampler_BLR: data_split must be a list of length m")
-  } else if (!all(sapply(1:C, function(i) is.vector(data_split[[i]]$y)))) {
-    stop("hmc_base_sampler_BLR: for each i in 1:C, data_split[[i]]$y must be a vector")
-  } else if (!all(sapply(1:C, function(i) is.matrix(data_split[[i]]$X)))) {
-    stop("hmc_base_sampler_BLR: for each i in 1:C, data_split[[i]]$X must be a matrix")
+    stop("hmc_base_sampler_BLR: data_split must be a list of length C")
+  } else if (!all(sapply(1:C, function(i) is.data.frame(data_split[[i]]$full_data_count)))) {
+    stop("hmc_base_sampler_BLR: for each i in 1:C, data_split[[i]]$full_data_count must be a data frame")
   } else if (!is.vector(prior_means)) {
     stop("hmc_base_sampler_BLR: prior_means must be a vector")
   } else if (!is.vector(prior_variances)) {
@@ -132,11 +128,10 @@ hmc_base_sampler_BLR <- function(nsamples,
   cl <- parallel::makeCluster(C, setup_strategy = "sequential", outfile = 'output_hmc_sample_BLR.txt')
   parallel::clusterExport(cl, varlist = list("hmc_sample_BLR", "seed"))
   base_samples  <- parallel::parLapply(cl, X = 1:C, fun = function(i) {
-    hmc_sample_BLR(data = data_split[[i]],
+    hmc_sample_BLR(full_data_count = data_split[[i]]$full_data_count,
                    C = C,
                    prior_means = prior_means,
                    prior_variances = prior_variances,
-                   power = power,
                    iterations = nsamples+warmup,
                    warmup = warmup,
                    chains = 1,

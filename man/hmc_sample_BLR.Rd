@@ -5,11 +5,10 @@
 \title{HMC sampler for Logistic Regression model}
 \usage{
 hmc_sample_BLR(
-  data,
+  full_data_count,
   C,
   prior_means,
   prior_variances,
-  power = 1,
   iterations,
   warmup,
   chains,
@@ -18,16 +17,14 @@ hmc_sample_BLR(
 )
 }
 \arguments{
-\item{data}{list where data$y is the vector for y responses
-and data$x is the design matrix for the covariates}
+\item{full_data_count}{a matrix or dataframe of the unique data with their
+corresponding counts}
 
 \item{C}{number of sub-posterior (default to 1)}
 
 \item{prior_means}{prior for means of predictors}
 
 \item{prior_variances}{prior for variances of predictors}
-
-\item{power}{exponent for the posterior (defaults to 1)}
 
 \item{iterations}{number of iterations per chain}
 
@@ -37,7 +34,8 @@ and data$x is the design matrix for the covariates}
 
 \item{seed}{seed number for random number generation}
 
-\item{output}{boolean value: defaults to T, determines whether or not to print output to console}
+\item{output}{boolean value: defaults to T, determines whether or not to
+print output to console}
 }
 \value{
 samples from the (sub-)posterior target for the logistic regression model

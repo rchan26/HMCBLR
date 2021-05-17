@@ -11,7 +11,6 @@ hmc_base_sampler_BLR(
   C,
   prior_means,
   prior_variances,
-  power = 1,
   seed = sample.int(.Machine$integer.max, 1),
   output = F
 )
@@ -27,18 +26,18 @@ hmc_base_sampler_BLR(
 
 \item{prior_variances}{prior for variances of predictors}
 
-\item{power}{exponent for the posterior (defaults to 1)}
-
 \item{seed}{seed number for random number generation}
 
-\item{output}{boolean value: defaults to T, determines whether or not to print output to console}
+\item{output}{boolean value: defaults to T, determines whether or not
+to print output to console}
 
 \item{data}{list of length C where each item is a list where for c=1,...,C,
-data[\link{c}]$y is the vector for y responses and data[\link{c}]$x is
-the design matrix for the covariates for sub-posterior c}
+data_split[\link{c}]$full_data_count is a matrix or data frame of
+the unique data with their corresponding counts}
 }
 \value{
-samples from the sub-posterior targets for the split data sets for the logistic regression model
+samples from the sub-posterior targets for the split data sets
+for the logistic regression model
 }
 \description{
 Sample for base level for logistic regression
