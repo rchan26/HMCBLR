@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_bayes_logistic");
-    reader.add_event(19, 17, "end", "model_bayes_logistic");
+    reader.add_event(20, 18, "end", "model_bayes_logistic");
     return reader;
 }
 #include <stan_meta_header.hpp>
@@ -44,10 +44,10 @@ private:
         int p;
         std::vector<int> y;
         matrix_d X;
+        std::vector<int> count;
         vector_d prior_means;
         vector_d prior_variances;
         int C;
-        double power;
 public:
     model_bayes_logistic(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -122,6 +122,20 @@ public:
                 }
             }
             current_statement_begin__ = 6;
+            validate_non_negative_index("count", "nsamples", nsamples);
+            context__.validate_dims("data initialization", "count", "int", context__.to_vec(nsamples));
+            count = std::vector<int>(nsamples, int(0));
+            vals_i__ = context__.vals_i("count");
+            pos__ = 0;
+            size_t count_k_0_max__ = nsamples;
+            for (size_t k_0__ = 0; k_0__ < count_k_0_max__; ++k_0__) {
+                count[k_0__] = vals_i__[pos__++];
+            }
+            size_t count_i_0_max__ = nsamples;
+            for (size_t i_0__ = 0; i_0__ < count_i_0_max__; ++i_0__) {
+                check_greater_or_equal(function__, "count[i_0__]", count[i_0__], 0);
+            }
+            current_statement_begin__ = 7;
             validate_non_negative_index("prior_means", "(p + 1)", (p + 1));
             context__.validate_dims("data initialization", "prior_means", "vector_d", context__.to_vec((p + 1)));
             prior_means = Eigen::Matrix<double, Eigen::Dynamic, 1>((p + 1));
@@ -131,7 +145,7 @@ public:
             for (size_t j_1__ = 0; j_1__ < prior_means_j_1_max__; ++j_1__) {
                 prior_means(j_1__) = vals_r__[pos__++];
             }
-            current_statement_begin__ = 7;
+            current_statement_begin__ = 8;
             validate_non_negative_index("prior_variances", "(p + 1)", (p + 1));
             context__.validate_dims("data initialization", "prior_variances", "vector_d", context__.to_vec((p + 1)));
             prior_variances = Eigen::Matrix<double, Eigen::Dynamic, 1>((p + 1));
@@ -141,18 +155,12 @@ public:
             for (size_t j_1__ = 0; j_1__ < prior_variances_j_1_max__; ++j_1__) {
                 prior_variances(j_1__) = vals_r__[pos__++];
             }
-            current_statement_begin__ = 8;
+            current_statement_begin__ = 9;
             context__.validate_dims("data initialization", "C", "int", context__.to_vec());
             C = int(0);
             vals_i__ = context__.vals_i("C");
             pos__ = 0;
             C = vals_i__[pos__++];
-            current_statement_begin__ = 9;
-            context__.validate_dims("data initialization", "power", "double", context__.to_vec());
-            power = double(0);
-            vals_r__ = context__.vals_r("power");
-            pos__ = 0;
-            power = vals_r__[pos__++];
             // initialize transformed data variables
             // execute transformed data statements
             // validate transformed data
@@ -230,9 +238,12 @@ public:
                 beta = in__.vector_constrain((p + 1));
             // model body
             current_statement_begin__ = 15;
-            lp_accum__.add((power * normal_log(beta, prior_means, stan::math::sqrt(multiply(C, prior_variances)))));
+            lp_accum__.add(normal_log(beta, prior_means, stan::math::sqrt(multiply(C, prior_variances))));
             current_statement_begin__ = 16;
-            lp_accum__.add((power * bernoulli_logit_log(y, multiply(X, beta))));
+            for (int i = 1; i <= nsamples; ++i) {
+                current_statement_begin__ = 17;
+                lp_accum__.add((get_base1(count, i, "count", 1) * bernoulli_logit_log(get_base1(y, i, "y", 1), multiply(row(X, i), beta))));
+            }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return

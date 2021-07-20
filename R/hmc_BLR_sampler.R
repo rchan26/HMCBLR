@@ -130,9 +130,9 @@ hmc_base_sampler_BLR <- function(nsamples,
   cl <- parallel::makeCluster(length(data_split),
                               setup_strategy = "sequential",
                               outfile = 'output_hmc_sample_BLR.txt')
-  parallel::clusterExport(cl, varlist = list("hmc_sample_BLR", "seed"))
-  base_samples  <- parallel::parLapply(cl, X = 1:length(data_split), fun = function(i) {
-    hmc_sample_BLR(full_data_count = data_split[[i]]$full_data_count,
+  parallel::clusterExport(cl, envir = environment(), varlist = c(ls(), "hmc_sample_BLR", "seed"))
+  base_samples <- parallel::parLapply(cl, X = 1:length(data_split), fun = function(c) {
+    hmc_sample_BLR(full_data_count = data_split[[c]]$full_data_count,
                    C = C,
                    prior_means = prior_means,
                    prior_variances = prior_variances,
