@@ -72,7 +72,8 @@ hmc_sample_BLR <- function(full_data_count,
                              warmup = warmup,
                              chains = chains,
                              seed = seed,
-                             control = list('adapt_delta' = 0.99))
+                             control = list(adapt_delta = 0.99,
+                                            max_treedepth = 20))
   } else {
     model <- rstan::sampling(object = stanmodels$bayes_logistic,
                              data = training_data,
@@ -82,7 +83,8 @@ hmc_sample_BLR <- function(full_data_count,
                              verbose = FALSE,
                              refresh = 0,
                              seed = seed,
-                             control = list('adapt_delta' = 0.99))
+                             control = list(adapt_delta = 0.99,
+                                            max_treedepth = 20))
   }
   print('Finished sampling from logistic regression model')
   return(rstan::extract(model)$beta)
@@ -116,18 +118,20 @@ hmc_base_sampler_BLR <- function(nsamples,
                                  prior_variances,
                                  seed = sample.int(.Machine$integer.max, 1),
                                  output = F) {
-  if (!is.list(data_split) | length(data_split)!=C) {
-    stop("hmc_base_sampler_BLR: data_split must be a list of length C")
-  } else if (!all(sapply(1:C, function(i) is.data.frame(data_split[[i]]$full_data_count)))) {
-    stop("hmc_base_sampler_BLR: for each i in 1:C, data_split[[i]]$full_data_count must be a data frame")
+  if (!is.list(data_split)) {
+    stop("hmc_base_sampler_BLR: data_split must be a list")
+  } else if (!all(sapply(1:length(data_split), function(i) is.data.frame(data_split[[i]]$full_data_count)))) {
+    stop("hmc_base_sampler_BLR: for each i in 1:length(data_split), data_split[[i]]$full_data_count must be a data frame")
   } else if (!is.vector(prior_means)) {
     stop("hmc_base_sampler_BLR: prior_means must be a vector")
   } else if (!is.vector(prior_variances)) {
     stop("hmc_base_sampler_BLR: prior_variances must be a vector")
   }
-  cl <- parallel::makeCluster(C, setup_strategy = "sequential", outfile = 'output_hmc_sample_BLR.txt')
+  cl <- parallel::makeCluster(length(data_split),
+                              setup_strategy = "sequential",
+                              outfile = 'output_hmc_sample_BLR.txt')
   parallel::clusterExport(cl, varlist = list("hmc_sample_BLR", "seed"))
-  base_samples  <- parallel::parLapply(cl, X = 1:C, fun = function(i) {
+  base_samples  <- parallel::parLapply(cl, X = 1:length(data_split), fun = function(i) {
     hmc_sample_BLR(full_data_count = data_split[[i]]$full_data_count,
                    C = C,
                    prior_means = prior_means,
