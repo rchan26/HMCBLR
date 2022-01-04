@@ -11,6 +11,7 @@ hmc_base_sampler_BLR(
   C,
   prior_means,
   prior_variances,
+  power = 1,
   seed = sample.int(.Machine$integer.max, 1),
   output = F
 )
@@ -20,11 +21,13 @@ hmc_base_sampler_BLR(
 
 \item{warmup}{number of burn in iterations}
 
-\item{C}{number of sub-posteriors (default to 1)}
+\item{C}{number of sub-posteriors}
 
 \item{prior_means}{prior for means of predictors}
 
 \item{prior_variances}{prior for variances of predictors}
+
+\item{power}{the exponent of the posterior (default is 1)}
 
 \item{seed}{seed number for random number generation}
 

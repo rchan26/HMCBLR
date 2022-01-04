@@ -21,7 +21,7 @@ unique_row_count <- function(y, X) {
 #'
 #' @param dataframe data
 #' @param y_col_index index for responses y in data frame
-#' @param x_col_index index / indicies for input variables X in data frame
+#' @param x_col_index index / indices for input variables X in data frame
 #' @param C number of subsets
 #' @param as_dataframe determines whether or not to return the split data as dataframes
 #'                     or as responses and inputs

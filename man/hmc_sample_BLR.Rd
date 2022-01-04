@@ -9,6 +9,7 @@ hmc_sample_BLR(
   C,
   prior_means,
   prior_variances,
+  power = 1,
   iterations,
   warmup,
   chains,
@@ -20,11 +21,13 @@ hmc_sample_BLR(
 \item{full_data_count}{a matrix or dataframe of the unique data with their
 corresponding counts}
 
-\item{C}{number of sub-posterior (default to 1)}
+\item{C}{number of sub-posterior}
 
 \item{prior_means}{prior for means of predictors}
 
 \item{prior_variances}{prior for variances of predictors}
+
+\item{power}{the exponent of the posterior (default is 1)}
 
 \item{iterations}{number of iterations per chain}
 

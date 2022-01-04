@@ -4,9 +4,10 @@
 #'
 #' @param full_data_count a matrix or dataframe of the unique data with their
 #'                        corresponding counts
-#' @param C number of sub-posterior (default to 1)
+#' @param C number of sub-posterior
 #' @param prior_means prior for means of predictors
 #' @param prior_variances prior for variances of predictors
+#' @param power the exponent of the posterior (default is 1)
 #' @param iterations number of iterations per chain
 #' @param warmup number of burn in iterations
 #' @param chains number of chains
@@ -21,6 +22,7 @@ hmc_sample_BLR <- function(full_data_count,
                            C,
                            prior_means,
                            prior_variances,
+                           power = 1,
                            iterations,
                            warmup,
                            chains,
@@ -36,7 +38,6 @@ hmc_sample_BLR <- function(full_data_count,
   y <- full_data_count$y
   X <- as.matrix(subset(full_data_count, select = -c(y, count)))
   count <- full_data_count$count
-  # check that y and X have the same number of instances
   if (length(y) != nrow(X)) {
     stop("hmc_sample_BLR: y and X do not have the same number of samples")
   }
@@ -56,7 +57,6 @@ hmc_sample_BLR <- function(full_data_count,
             the design matrix has been changed to include the intercept")
   }
   print("Sampling from logistic regression model")
-  # function to use Stan (HMC) to sample from the tempered mixture Gaussian distribution
   training_data <- list(nsamples = length(y),
                         p = (ncol(X)-1),
                         y = y,
@@ -64,7 +64,8 @@ hmc_sample_BLR <- function(full_data_count,
                         count = count,
                         prior_means = prior_means,
                         prior_variances = prior_variances,
-                        C = C)
+                        C = C,
+                        power = power)
   if (output) {
     model <- rstan::sampling(object = stanmodels$bayes_logistic,
                              data = training_data,
@@ -99,9 +100,10 @@ hmc_sample_BLR <- function(full_data_count,
 #' @param data list of length C where each item is a list where for c=1,...,C,
 #'             data_split[[c]]$full_data_count is a matrix or data frame of
 #'             the unique data with their corresponding counts
-#' @param C number of sub-posteriors (default to 1)
+#' @param C number of sub-posteriors
 #' @param prior_means prior for means of predictors
 #' @param prior_variances prior for variances of predictors
+#' @param power the exponent of the posterior (default is 1)
 #' @param seed seed number for random number generation
 #' @param output boolean value: defaults to T, determines whether or not
 #'               to print output to console
@@ -116,6 +118,7 @@ hmc_base_sampler_BLR <- function(nsamples,
                                  C,
                                  prior_means,
                                  prior_variances,
+                                 power = 1,
                                  seed = sample.int(.Machine$integer.max, 1),
                                  output = F) {
   if (!is.list(data_split)) {
@@ -136,6 +139,7 @@ hmc_base_sampler_BLR <- function(nsamples,
                    C = C,
                    prior_means = prior_means,
                    prior_variances = prior_variances,
+                   power = power,
                    iterations = nsamples+warmup,
                    warmup = warmup,
                    chains = 1,

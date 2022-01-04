@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_bayes_logistic");
-    reader.add_event(20, 18, "end", "model_bayes_logistic");
+    reader.add_event(24, 22, "end", "model_bayes_logistic");
     return reader;
 }
 #include <stan_meta_header.hpp>
@@ -42,12 +42,13 @@ class model_bayes_logistic
 private:
         int nsamples;
         int p;
-        std::vector<int> y;
+        vector_d y;
         matrix_d X;
-        std::vector<int> count;
+        vector_d count;
         vector_d prior_means;
         vector_d prior_variances;
         int C;
+        double power;
 public:
     model_bayes_logistic(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -94,20 +95,17 @@ public:
             check_greater_or_equal(function__, "p", p, 0);
             current_statement_begin__ = 4;
             validate_non_negative_index("y", "nsamples", nsamples);
-            context__.validate_dims("data initialization", "y", "int", context__.to_vec(nsamples));
-            y = std::vector<int>(nsamples, int(0));
-            vals_i__ = context__.vals_i("y");
+            context__.validate_dims("data initialization", "y", "vector_d", context__.to_vec(nsamples));
+            y = Eigen::Matrix<double, Eigen::Dynamic, 1>(nsamples);
+            vals_r__ = context__.vals_r("y");
             pos__ = 0;
-            size_t y_k_0_max__ = nsamples;
-            for (size_t k_0__ = 0; k_0__ < y_k_0_max__; ++k_0__) {
-                y[k_0__] = vals_i__[pos__++];
+            size_t y_j_1_max__ = nsamples;
+            for (size_t j_1__ = 0; j_1__ < y_j_1_max__; ++j_1__) {
+                y(j_1__) = vals_r__[pos__++];
             }
-            size_t y_i_0_max__ = nsamples;
-            for (size_t i_0__ = 0; i_0__ < y_i_0_max__; ++i_0__) {
-                check_greater_or_equal(function__, "y[i_0__]", y[i_0__], 0);
-                check_less_or_equal(function__, "y[i_0__]", y[i_0__], 1);
-            }
-            current_statement_begin__ = 5;
+            check_greater_or_equal(function__, "y", y, 0);
+            check_less_or_equal(function__, "y", y, 1);
+            current_statement_begin__ = 6;
             validate_non_negative_index("X", "nsamples", nsamples);
             validate_non_negative_index("X", "(p + 1)", (p + 1));
             context__.validate_dims("data initialization", "X", "matrix_d", context__.to_vec(nsamples,(p + 1)));
@@ -121,21 +119,18 @@ public:
                     X(j_1__, j_2__) = vals_r__[pos__++];
                 }
             }
-            current_statement_begin__ = 6;
-            validate_non_negative_index("count", "nsamples", nsamples);
-            context__.validate_dims("data initialization", "count", "int", context__.to_vec(nsamples));
-            count = std::vector<int>(nsamples, int(0));
-            vals_i__ = context__.vals_i("count");
-            pos__ = 0;
-            size_t count_k_0_max__ = nsamples;
-            for (size_t k_0__ = 0; k_0__ < count_k_0_max__; ++k_0__) {
-                count[k_0__] = vals_i__[pos__++];
-            }
-            size_t count_i_0_max__ = nsamples;
-            for (size_t i_0__ = 0; i_0__ < count_i_0_max__; ++i_0__) {
-                check_greater_or_equal(function__, "count[i_0__]", count[i_0__], 0);
-            }
             current_statement_begin__ = 7;
+            validate_non_negative_index("count", "nsamples", nsamples);
+            context__.validate_dims("data initialization", "count", "vector_d", context__.to_vec(nsamples));
+            count = Eigen::Matrix<double, Eigen::Dynamic, 1>(nsamples);
+            vals_r__ = context__.vals_r("count");
+            pos__ = 0;
+            size_t count_j_1_max__ = nsamples;
+            for (size_t j_1__ = 0; j_1__ < count_j_1_max__; ++j_1__) {
+                count(j_1__) = vals_r__[pos__++];
+            }
+            check_greater_or_equal(function__, "count", count, 0);
+            current_statement_begin__ = 9;
             validate_non_negative_index("prior_means", "(p + 1)", (p + 1));
             context__.validate_dims("data initialization", "prior_means", "vector_d", context__.to_vec((p + 1)));
             prior_means = Eigen::Matrix<double, Eigen::Dynamic, 1>((p + 1));
@@ -145,7 +140,7 @@ public:
             for (size_t j_1__ = 0; j_1__ < prior_means_j_1_max__; ++j_1__) {
                 prior_means(j_1__) = vals_r__[pos__++];
             }
-            current_statement_begin__ = 8;
+            current_statement_begin__ = 10;
             validate_non_negative_index("prior_variances", "(p + 1)", (p + 1));
             context__.validate_dims("data initialization", "prior_variances", "vector_d", context__.to_vec((p + 1)));
             prior_variances = Eigen::Matrix<double, Eigen::Dynamic, 1>((p + 1));
@@ -155,19 +150,25 @@ public:
             for (size_t j_1__ = 0; j_1__ < prior_variances_j_1_max__; ++j_1__) {
                 prior_variances(j_1__) = vals_r__[pos__++];
             }
-            current_statement_begin__ = 9;
+            current_statement_begin__ = 11;
             context__.validate_dims("data initialization", "C", "int", context__.to_vec());
             C = int(0);
             vals_i__ = context__.vals_i("C");
             pos__ = 0;
             C = vals_i__[pos__++];
+            current_statement_begin__ = 12;
+            context__.validate_dims("data initialization", "power", "double", context__.to_vec());
+            power = double(0);
+            vals_r__ = context__.vals_r("power");
+            pos__ = 0;
+            power = vals_r__[pos__++];
             // initialize transformed data variables
             // execute transformed data statements
             // validate transformed data
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 12;
+            current_statement_begin__ = 15;
             validate_non_negative_index("beta", "(p + 1)", (p + 1));
             num_params_r__ += (p + 1);
         } catch (const std::exception& e) {
@@ -187,7 +188,7 @@ public:
         (void) pos__; // dummy call to supress warning
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
-        current_statement_begin__ = 12;
+        current_statement_begin__ = 15;
         if (!(context__.contains_r("beta")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable beta missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("beta");
@@ -229,7 +230,7 @@ public:
         try {
             stan::io::reader<local_scalar_t__> in__(params_r__, params_i__);
             // model parameters
-            current_statement_begin__ = 12;
+            current_statement_begin__ = 15;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> beta;
             (void) beta;  // dummy to suppress unused var warning
             if (jacobian__)
@@ -237,13 +238,10 @@ public:
             else
                 beta = in__.vector_constrain((p + 1));
             // model body
-            current_statement_begin__ = 15;
-            lp_accum__.add(normal_log(beta, prior_means, stan::math::sqrt(multiply(C, prior_variances))));
-            current_statement_begin__ = 16;
-            for (int i = 1; i <= nsamples; ++i) {
-                current_statement_begin__ = 17;
-                lp_accum__.add((get_base1(count, i, "count", 1) * bernoulli_logit_log(get_base1(y, i, "y", 1), multiply(row(X, i), beta))));
-            }
+            current_statement_begin__ = 18;
+            lp_accum__.add((power * normal_log(beta, prior_means, stan::math::sqrt(multiply(C, prior_variances)))));
+            current_statement_begin__ = 19;
+            lp_accum__.add((power * sum(elt_multiply(count, subtract(elt_multiply(multiply(X, beta), y), stan::math::log(add(1, stan::math::exp(multiply(X, beta)))))))));
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return
