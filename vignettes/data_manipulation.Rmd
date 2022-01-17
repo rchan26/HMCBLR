@@ -1,0 +1,128 @@
+---
+title: "Simulating, splitting and combining data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{data_manipulation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(HMCBLR)
+```
+
+## Simulating data from a logistic regression model
+
+To simulate data from a logistic regression model, we use the `simulate_LR_data` function, where we pass in the number of data points we want to simulate, `N`, the intercept coefficient, `alpha`, the frequency of each coefficient, `frequencies`, the true coefficient values, `coefficients`, and a seed value into `seed`.
+
+```{r}
+seed <- 2021
+ndata <- 50
+true_beta <- c(-3, 1.2)
+frequencies <- c(0.6) # must have length = length(true_beta)-1
+# simulate data set
+simulated_data <- simulate_LR_data(N = ndata,
+                                   alpha = true_beta[1],
+                                   frequencies = frequencies,
+                                   coefficients = true_beta[2:length(true_beta)],
+                                   seed = seed) 
+```
+
+We can use the `check_activity` function to see how active each variable is in the data set. By default, the function will print out the proportion of the data where each variable is active. We can change this by changing the `proportion` argument to `TRUE`.
+
+```{r}
+check_activity(simulated_data)
+```
+
+```{r}
+check_activity(simulated_data, proportion = FALSE)
+```
+
+```{r}
+print(simulated_data)
+```
+
+When simulating the data, if we simulate that for a given entry, a variable will be active, we simulate the value of that variable from a Gaussian distribution. We can change the mean and standard deviation through `G_means` and `G_sds`, which must be a vector with the same length as the argument `frequencies`. For instance, if we set this mean to be $20$ with variance $0$, then all variables that are active will be set to $20$.
+
+```{r}
+simulated_data_2 <- simulate_LR_data(N = ndata,
+                                     alpha = true_beta[1],
+                                     frequencies = frequencies,
+                                     coefficients = true_beta[2:length(true_beta)],
+                                     G_means = 20,
+                                     G_sds = 0,
+                                     seed = seed)
+print(simulated_data_2)
+```
+By checking activity, we can see that the number of active $y$ responses has now increased due to the increase in the value of the variables that are active.
+
+```{r}
+check_activity(simulated_data, proportion = FALSE)
+```
+
+## Unique row counts
+
+To reduce computation when applying HMC and Stan, we can compute the unique row counts of the data using the `unique_row_count` function where we pass in the $y$ responses and the design matrix $X$. The function returns two items in a list:
+
+* full_data_count: giving the unique rows (and their counts) of the full data frame
+* design_count: giving the unique rows (and their counts) of the design matrix
+
+```{r}
+unique_row_count(y = simulated_data$y, X = simulated_data$X)
+```
+
+This is particularly useful to group data entries that are very common, for instance with the second simulated data set:
+
+```{r}
+unique_row_count(y = simulated_data_2$y, X = simulated_data_2$X)
+```
+
+## Splitting the data into C subsets
+
+The `split_data` function allows you to split the data into a user specified $C$ number of subsets. The `as_dataframe` variable is set to `TRUE` by default, and this simply gives you a list where each item is a subset of the data in a data frame format.
+
+```{r}
+split_data(dataframe = simulated_data,
+           y_col_index = 1,
+           X_col_index = 2:ncol(simulated_data),
+           C = 2)
+```
+
+If the `as_dataframe` argument is set to `TRUE`, then each item in the returned list gives the subset of the data given as four items:
+
+* `y`: giving the $y$ responses for the subset
+* `X`: giving the design matrix $X$ for the subset
+* `full_data_count`: giving the unique rows (and their counts) of the subset
+* `design_count`: giving the unique rows (and their counts) of the subset
+
+```{r}
+split_simulated_data <- split_data(dataframe = simulated_data,
+                                   y_col_index = 1,
+                                   X_col_index = 2:ncol(simulated_data),
+                                   C = 2,
+                                   as_dataframe = FALSE)
+print(split_simulated_data)
+```
+
+## Combining datasets
+
+We can combine data sets again using the `combine_data` function. Note that the split data must be split with `as_dataframe` set to `FALSE`.
+
+```{r}
+combined_data <- combine_data(split_simulated_data, dim = 2)
+print(combined_data)
+```
+
+We can double check that the combined data is indeed the original data:
+
+```{r}
+print(identical(combined_data$y, simulated_data$y))
+print(identical(combined_data$X[,2], simulated_data$X))
+```
