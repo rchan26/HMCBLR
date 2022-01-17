@@ -4,7 +4,7 @@
 \alias{split_data}
 \title{Function to split a dataframe into C sub-dataframes}
 \usage{
-split_data(dataframe, y_col_index, X_col_index, C, as_dataframe = T)
+split_data(dataframe, y_col_index, X_col_index, C, as_dataframe = TRUE)
 }
 \arguments{
 \item{dataframe}{data}

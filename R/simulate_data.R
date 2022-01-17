@@ -21,7 +21,11 @@ simulate_LR_data <- function(N,
                              G_sds = rep(1, length(frequencies)),
                              seed = NULL) {
   if (length(frequencies) != length(coefficients)) {
-    stop("length of frequencies and length of coefficients are not the same")
+    stop("simulate_LR_data: length of frequencies and length of coefficients are not the same")
+  } else if (length(G_means) != length(frequencies)) {
+    stop("simulate_LR_data: length of frequencies and length of G_means are not the same")
+  } else if (length(G_sds) != length(frequencies)) {
+    stop("simulate_LR_data: length of frequencies and length of G_sds are not the same")
   }
   if (!is.null(seed)) {
     set.seed(seed)
@@ -71,7 +75,7 @@ check_activity <- function(data, proportion = T) {
     }
   }
   if (proportion) {
-    print('proportion that each variable is active in the dataset:')  
+    print('proportion that each variable is active in the dataset:')
   } else {
     print('number of active variables:')
   }

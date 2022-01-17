@@ -29,7 +29,7 @@ unique_row_count <- function(y, X) {
 #' @return split data
 #'
 #' @export
-split_data <- function(dataframe, y_col_index, X_col_index, C, as_dataframe = T) {
+split_data <- function(dataframe, y_col_index, X_col_index, C, as_dataframe = TRUE) {
   samples_per_sub_post <- nrow(dataframe)/C
   if (samples_per_sub_post%%1==0) {
     split_dataframe <- lapply(1:C, function(i) {
@@ -52,7 +52,6 @@ split_data <- function(dataframe, y_col_index, X_col_index, C, as_dataframe = T)
     for (i in 1:C) {
       data[[i]]$y <- split_dataframe[[i]][,y_col_index]
       data[[i]]$X <- as.matrix(cbind(rep(1, nrow(as.matrix(x = split_dataframe[[i]][,X_col_index]))), split_dataframe[[i]][,X_col_index]))
-      colnames(data[[i]]$X)[1] <- 'intercept'
       counts <- unique_row_count(y = data[[i]]$y, X = data[[i]]$X)
       data[[i]]$full_data_count <- counts$full_data_count
       data[[i]]$design_count <- counts$design_count
