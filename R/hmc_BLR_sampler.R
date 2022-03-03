@@ -105,6 +105,7 @@ hmc_sample_BLR <- function(full_data_count,
 #' @param prior_variances prior for variances of predictors
 #' @param power the exponent of the posterior (default is 1)
 #' @param seed seed number for random number generation
+#' @param n_cores number of cores to use
 #' @param output boolean value: defaults to T, determines whether or not
 #'               to print output to console
 #'
@@ -120,6 +121,7 @@ hmc_base_sampler_BLR <- function(nsamples,
                                  prior_variances,
                                  power = 1,
                                  seed = sample.int(.Machine$integer.max, 1),
+                                 n_cores = parallel::detectCores(),
                                  output = F) {
   if (!is.list(data_split)) {
     stop("hmc_base_sampler_BLR: data_split must be a list")
@@ -130,7 +132,7 @@ hmc_base_sampler_BLR <- function(nsamples,
   } else if (!is.vector(prior_variances)) {
     stop("hmc_base_sampler_BLR: prior_variances must be a vector")
   }
-  cl <- parallel::makeCluster(length(data_split),
+  cl <- parallel::makeCluster(n_cores,
                               setup_strategy = "sequential",
                               outfile = 'output_hmc_sample_BLR.txt')
   parallel::clusterExport(cl, envir = environment(), varlist = c(ls(), "hmc_sample_BLR", "seed"))

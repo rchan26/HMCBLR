@@ -13,6 +13,7 @@ hmc_base_sampler_BLR(
   prior_variances,
   power = 1,
   seed = sample.int(.Machine$integer.max, 1),
+  n_cores = parallel::detectCores(),
   output = F
 )
 }
@@ -30,6 +31,8 @@ hmc_base_sampler_BLR(
 \item{power}{the exponent of the posterior (default is 1)}
 
 \item{seed}{seed number for random number generation}
+
+\item{n_cores}{number of cores to use}
 
 \item{output}{boolean value: defaults to T, determines whether or not
 to print output to console}
