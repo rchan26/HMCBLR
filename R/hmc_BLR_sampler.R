@@ -133,7 +133,6 @@ hmc_base_sampler_BLR <- function(nsamples,
     stop("hmc_base_sampler_BLR: prior_variances must be a vector")
   }
   cl <- parallel::makeCluster(n_cores,
-                              setup_strategy = "sequential",
                               outfile = 'output_hmc_sample_BLR.txt')
   parallel::clusterExport(cl, envir = environment(), varlist = c(ls(), "hmc_sample_BLR", "seed"))
   base_samples <- parallel::parLapply(cl, X = 1:length(data_split), fun = function(c) {

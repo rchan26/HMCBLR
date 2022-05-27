@@ -2,10 +2,8 @@ data {
   int<lower=0> nsamples;
   int<lower=0> p;
   vector<lower=0, upper=1>[nsamples] y;
-  // int<lower=0, upper=1> y[nsamples];
   matrix[nsamples, (p+1)] X; // X includes the intercept term in first column
   vector<lower=0>[nsamples] count;
-  // int<lower=0> count[nsamples];
   vector[p+1] prior_means;
   vector[p+1] prior_variances;
   int C;
